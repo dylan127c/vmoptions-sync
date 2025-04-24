@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Level;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -184,7 +185,8 @@ public class JetBrainsVmOptionsMaintainer {
                     }
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                // !.如果文件不存在，不需要抛出异常
+                // >.throw new RuntimeException(e);
             }
         });
         return presetVar;
@@ -292,6 +294,8 @@ public class JetBrainsVmOptionsMaintainer {
      * @throws IOException IO 异常
      */
     private static void fileBackup(Path vmoptionsPath) throws IOException {
+        if (Files.notExists(vmoptionsPath, LinkOption.NOFOLLOW_LINKS)) return;
+
         Path projectPath = Path.of(System.getProperty("user.dir"));
         Path productPath = vmoptionsPath.getParent();
 
