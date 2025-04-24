@@ -1,0 +1,8 @@
+# !.调整 -Xms、-Xmx 和 ReservedCodeCacheSize 的值以提高 JetBrains 产品性能
+# !.不同的 JetBrains 产品会有不同的默认值，用户配置亦需要对不同产品作出合适的调整
+# >.初始堆内存：512m  => 2048m (1/4 or 1/2 of max heap size)
+# >.最大堆内存设置：2048m => 4096m
+# >.代码缓存大小：512m => 1024m
+-Xms2048m
+-Xmx4096m
+-XX:ReservedCodeCacheSize=1024m

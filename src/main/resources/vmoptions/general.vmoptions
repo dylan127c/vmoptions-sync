@@ -1,0 +1,18 @@
+# !.硬件加速：https://docs.oracle.com/javase/8/docs/technotes/guides/2d/flags.html
+# >.预期用途：
+# >.java2d.opengl   => 启用基于 OpenGL 的管线，提供硬件加速（跨平台）；
+# >.java2d.metal    => 启用基于 Metal 的管线，提供硬件加速（macOS）；
+# >.java2d.d3d      => 关闭 Java 2D 系统对 Direct3D 的使用（不启用）。
+-Dsun.java2d.opengl=true
+-Dsun.java2d.metal=false
+-Dsun.java2d.d3d=false
+# !.指定 IDEA 运行时的默认字符编码为 UTF-8
+# >.防止控制台输出乱码（最主要的贡献）
+-Dfile.encoding=UTF-8
+# !.JA-NETFILTER AGENT HIJACK
+# >.推荐进一步配置代理链以加强安全性（避免检测）
+# >.注意 RAINBOW-BRACKETS-CRACKED.JAR 需要放置在 JA-NETFILTER.JAR 之前
+--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED
+-javaagent:H:/GoogleDrive/Applications/JetBrains/ja-netfilter-all/JETBRA-240701/rainbow-brackets-cracked.jar
+-javaagent:H:/GoogleDrive/Applications/JetBrains/ja-netfilter-all/JETBRA-240701/ja-netfilter.jar=jetbrains

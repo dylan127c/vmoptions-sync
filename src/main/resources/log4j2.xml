@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    status：日志框架本身的日志输出等级；
+    monitorInterval：自动重新载入配置文件的时间间隔。
+-->
+<Configuration status="OFF" monitorInterval="5">
+    <properties>
+        <property name="pattern">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %c => %m%n</property>
+        <property name="logFile">${logFile}</property>
+    </properties>
+
+    <Appenders>
+        <!-- 控制台输出日志 -->
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}"/>
+        </Console>
+
+        <!-- 文件输出日志，但使用随机读写流，性能提高 -->
+        <RandomAccessFile name="accessFile" fileName="${logFile}/log4j2-acc.log">
+            <PatternLayout pattern="${pattern}"/>
+        </RandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 配置 rootLogger 的日志级别和 appender 类型-->
+        <Root level="TRACE">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="accessFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

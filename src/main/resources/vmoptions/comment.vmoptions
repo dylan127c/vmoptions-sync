@@ -1,0 +1,5 @@
+# IMPORTANT => 以下几条配置由 JetBrains Toolbox 自动添加，其他 JetBrains 产品也会添加类似的配置，通常会不太一样
+# IMPORTANT => 当需要在不同的 JetBrains 产品之间共享配置时，可以忽略下述几条配置，只添加上述个人自定义的配置即可
+# >.注意 JetBrains Toolbox 还会更改最大堆内存的值！如果配置已存在，则只读取；否则添加 -Xmx 参数
+# >.自动添加的 -Xmx 参数的具体值会根据系统、对应 JetBrains 产品的不同而有所不同，例如 DataGrip 自动添加的 -Xmx 为 2048m（2GB）
+# ?.还有不要费劲添加空行以追求此配置的清晰性了，因为 JetBrains Toolbox 会自动删除这些空行
