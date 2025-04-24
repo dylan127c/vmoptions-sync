@@ -1,0 +1,14 @@
+{
+    // *.JDK 配置和 Maven 配置相关，程序会优先在这个配置里找对应的 JDK 版本
+    // *.如果没有对应的 JDK 版本，那么会使用系统环境变量 JAVA_HOME 里的 JDK 版本
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "H:\\Java SE Development Kit\\Liberica JDK\\jdk17.0.14_full",
+            "default": true
+        }
+    ],
+    // *.是否自动更新 Maven 的配置
+    // *.如果希望修改了上述 JDK 配置后立即生效，似乎还是要主动修改一下 pom.xml 文件以刷新项目
+    "java.configuration.updateBuildConfiguration": "automatic",
+}
