@@ -4,7 +4,7 @@
     "java.configuration.runtimes": [
         {
             "name": "JavaSE-17",
-            "path": "H:\\Java SE Development Kit\\Liberica JDK\\jdk17.0.14_full",
+            "path": "H:\\Development Kit\\JavaSE\\BellSoft Liberica\\jdk17.0.14_full",
             "default": true
         }
     ],
