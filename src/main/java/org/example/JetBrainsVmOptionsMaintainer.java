@@ -5,9 +5,8 @@ import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -22,10 +21,10 @@ import java.util.stream.Stream;
  * <li>/vmoptions/general.vmoptions     =>  产品通用的 vmoptions 参数；
  * <li>/vmoptions/comment.vmoptions     =>  备注预设的 vmoptions 参数（例如：由 JetBrains Toolbox 自动生成的 JVM 配置）。
  * </ul>
- * 建议在 VSCode 中运行此程序，不建议在 IntelliJ IDEA 中运行，这可能导致 IDEA 本身的 vmoptions 无法正常打开。
+ * 实测 IntelliJ IDEA 打开 vmoptions 文件时，大概率会出现弹出“未关联类型”窗口的问题，该问题大概是 IDEA 本身存在的 BUG 导致的。
  * <p>
- * 如果遇到 idea64.exe.vmoptions 无法正常打开的情况，选择“文件”-“使缓存失效...”后，勾选前两项以重启 IDE 并修复。
- * 
+ * 推荐解决办法是在“设置”-“编辑器”-“文件类型”中添加一个 VmOptions 文件类型，以匹配 *.vmoptions 的文件名模式。
+ *
  * @author dylan
  * @date 2025/4/23 22:48
  */
@@ -101,8 +100,11 @@ public class JetBrainsVmOptionsMaintainer {
                     format(LOG_SEPARATOR), count[0]--);
 
             try {
+                // !.备份文件可能出现 IOException 异常
                 fileBackup(path);
-                Files.writeString(path, content);
+
+                // !.如果备份文件成功，则继续进行替换操作
+                Files.writeString(path, content, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
                 log.info(
                         "🔵[{}] 写入成功：{}",
                         format(productName), fileName);
@@ -186,7 +188,8 @@ public class JetBrainsVmOptionsMaintainer {
                 }
             } catch (IOException e) {
                 // !.如果文件不存在，不需要抛出异常
-                // >.throw new RuntimeException(e);
+                // >.异常静默处理；因为 vmoptions 文件不存在，则可能是新安装的 JetBrains 产品
+                // >.同时，这不会影响其他 vmoptions 文件的读取，因为异常显然会终止整个程序的执行
             }
         });
         return presetVar;
@@ -205,14 +208,14 @@ public class JetBrainsVmOptionsMaintainer {
         presetVar.keySet().forEach(
                 path -> {
                     // *.PRODUCT_NAME_PATTERN 同样可以匹配 vmoptions 文件名
-                    // >.例如 idea64.exe.vmoptions 能够匹配得到 idea 字符串
+                    // >.例如 idea64.exe.vmoptions 能够匹配得到 idea 字符串，拼接可以得到 idea.vmoptions 文件名
                     String vmoptionsName = path.getFileName().toString();
                     Matcher matcher = PRODUCT_NAME_PATTERN.matcher(vmoptionsName);
                     if (matcher.find()) {
                         String produceName = path.getParent().getFileName().toString();
 
                         // !.获取对应 IDE 的独有 vmoptions 配置
-                        // !.只有存在独有的 vmoptions 配置才会生成 vmoptions 文件
+                        // !.只有存在独有的 vmoptions 配置才会生成对应产品的 vmoptions 文件内容
                         String specific = "/vmoptions/special/" + matcher.group() + ".vmoptions";
 
                         Class<JetBrainsVmOptionsMaintainer> clazz = JetBrainsVmOptionsMaintainer.class;
@@ -230,6 +233,7 @@ public class JetBrainsVmOptionsMaintainer {
                                         "✅[{}] 存在配置：{}",
                                         format(produceName), specific);
                             } else {
+                                // *.resources 目录中不存在自定义的 vmoptions 配置时 InputStream 为 null 值
                                 int saved = count.getOrDefault(Level.DEBUG, 0);
                                 count.put(Level.DEBUG, saved + 1);
                                 log.debug(
@@ -237,11 +241,16 @@ public class JetBrainsVmOptionsMaintainer {
                                         format(produceName), specific);
                             }
                         } catch (IOException e) {
+                            // *.异常会在 AutoCloseable 无法正常关闭时抛出
+                            // *.或在 InputStream.readAllBytes() 时抛出，即 combineVmOptionsContent() 方法中抛出
                             int saved = count.getOrDefault(Level.ERROR, 0);
                             count.put(Level.ERROR, saved + 1);
                             log.error(
                                     "❌[{}] 异常读取：{}",
                                     format(produceName), specific);
+                            // >.异常静默处理
+                            // >.当某个 vmoptions 文件处理失败时，其他 vmoptions 文件仍然可以正常尝试处理
+                            // >.出现异常的产品其 vmoptions 文件就无法成功生成，对应的替换操作也无法完成
                         }
                     }
                 }
@@ -267,8 +276,8 @@ public class JetBrainsVmOptionsMaintainer {
 
         // !.保险起见，将所有的 CRLF 换行符替换为 Unix 风格的 LF 换行符
         // !.因为 vmoptions 文件仅支持以 LF 作为换行符，不能存在 CRLF 换行符
-        // !.避免不存在任何预设 JVM 参数的情况
         if (presetVar == null || presetVar.isEmpty()) {
+            // >.避免不存在任何预设 JVM 参数的情况
             return strNeeded.replace("\r\n", "\n");
         }
         return (strNeeded + new String(isToolbox.readAllBytes()) + "\n" +
@@ -293,7 +302,9 @@ public class JetBrainsVmOptionsMaintainer {
      * @param vmoptionsPath vmoptions 文件
      * @throws IOException IO 异常
      */
+    @SuppressWarnings("LoggingSimilarMessage")
     private static void fileBackup(Path vmoptionsPath) throws IOException {
+        // !.JetBrains 产品是新安装的情况下，对应的 vmoptions 文件可能不存在
         if (Files.notExists(vmoptionsPath, LinkOption.NOFOLLOW_LINKS)) return;
 
         Path projectPath = Path.of(System.getProperty("user.dir"));
@@ -305,20 +316,41 @@ public class JetBrainsVmOptionsMaintainer {
         // !.确保备份目录存在
         Path backupPath = projectPath.resolve(BACKUP_FILE);
         if (!Files.exists(backupPath)) {
-            Files.createDirectories(backupPath);
+            try {
+                Files.createDirectories(backupPath);
+            } catch (IOException e) {
+                log.error(
+                        "❌[{}] 创建失败：{}",
+                        format(LOG_SEPARATOR), "备份目录创建失败，重试程序或手动进行创建。");
+                throw e;
+            }
         }
 
         // !.确保产品目录存在
         String productName = productPath.getFileName().toString();
         Path productBackupPath = backupPath.resolve(productName);
         if (!Files.exists(productBackupPath)) {
-            Files.createDirectories(productBackupPath);
+            try {
+                Files.createDirectories(productBackupPath);
+            } catch (IOException e) {
+                log.error(
+                        "❌[{}] 创建失败：{}",
+                        format(LOG_SEPARATOR), "产品目录创建失败，重试程序或手动进行创建。");
+                throw e;
+            }
         }
 
         // !.备份文件
         String vmoptionsFileName = vmoptionsPath.getFileName().toString();
         Path vmoptionsBackupPath = productBackupPath.resolve(vmoptionsFileName + "_" + dateSuffix);
-        Files.copy(vmoptionsPath, vmoptionsBackupPath);
+        try {
+            Files.copy(vmoptionsPath, vmoptionsBackupPath);
+        } catch (IOException e) {
+            log.error(
+                    "❌[{}] 备份失败：{}",
+                    format(LOG_SEPARATOR), "文件备份失败，重试程序或手动进行备份。");
+            throw e;
+        }
 
         // !.输出日志
         String shortBackupPathStr = vmoptionsBackupPath.toString().replace(projectPath + "\\", "").replace("\\", "/");
@@ -330,6 +362,13 @@ public class JetBrainsVmOptionsMaintainer {
         cleanupBackups(productBackupPath);
     }
 
+    /**
+     * 清理过时的备份文件。
+     * <p>
+     * 注意，清理备份文件失败并不影响整个程序的主逻辑，因此方法的所有异常都可以静默处理。
+     *
+     * @param productBackupPath 产品备份目录
+     */
     private static void cleanupBackups(Path productBackupPath) {
         String productName = productBackupPath.getFileName().toString();
 
@@ -358,6 +397,7 @@ public class JetBrainsVmOptionsMaintainer {
             log.error(
                     "❌[{}] 过时清理：{}",
                     format(productName), "备份清理失败，请手动删除过时备份。");
+            // >.异常静默处理
         }
     }
 
