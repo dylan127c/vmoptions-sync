@@ -5,7 +5,7 @@
 -->
 <Configuration status="OFF" monitorInterval="5">
     <properties>
-        <property name="pattern">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %c => %m%n</property>
+        <property name="pattern">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%25.25c{1.}:%-3L] [%5rms] => %m%n</property>
         <property name="logFile">${logFile}</property>
     </properties>
 

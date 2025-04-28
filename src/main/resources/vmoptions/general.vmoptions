@@ -3,8 +3,8 @@
 # >.java2d.opengl   => 启用基于 OpenGL 的管线，提供硬件加速（跨平台）；
 # >.java2d.metal    => 启用基于 Metal 的管线，提供硬件加速（macOS）；
 # >.java2d.d3d      => 关闭 Java 2D 系统对 Direct3D 的使用（不启用）。
--Dsun.java2d.opengl=true
--Dsun.java2d.metal=false
+-Dsun.java2d.opengl=false
+-Dsun.java2d.metal=true
 -Dsun.java2d.d3d=false
 # !.指定 IDEA 运行时的默认字符编码为 UTF-8
 # >.防止控制台输出乱码（最主要的贡献）
