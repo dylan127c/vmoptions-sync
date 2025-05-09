@@ -11,7 +11,7 @@ import java.nio.file.Path;
 
 /**
  * @author dylan
- * @date 2025/4/26 03:21
+ * @version 2025/04/26 03:21
  */
 public class JetBrainsVmOptionsMaintainerTest {
 

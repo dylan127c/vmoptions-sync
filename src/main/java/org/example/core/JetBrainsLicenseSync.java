@@ -18,7 +18,7 @@ import static org.example.tool.LogFormatter.formatDefault;
  * 只要许可曾经存在且使用此类进行过备份，那么下次新安装 JetBrains 产品时只需要再执行此类即可恢复所有许可证。
  *
  * @author dylan
- * @date 2025/4/26 19:24
+ * @version 2025/04/26 19:24
  */
 @Log4j2
 public class JetBrainsLicenseSync {

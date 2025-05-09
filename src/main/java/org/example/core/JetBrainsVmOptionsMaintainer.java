@@ -33,7 +33,7 @@ import static org.example.tool.LogFormatter.formatDefault;
  * 推荐解决办法是在“设置”-“编辑器”-“文件类型”中添加一个 VmOptions 文件类型，以匹配 *.vmoptions 的文件名模式。
  *
  * @author dylan
- * @date 2025/4/23 22:48
+ * @version 2025/04/23 22:48
  */
 @Log4j2
 public class JetBrainsVmOptionsMaintainer {

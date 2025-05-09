@@ -5,7 +5,7 @@ import org.example.core.JetBrainsVmOptionsMaintainer;
 
 /**
  * @author dylan
- * @date 2025/4/26 21:00
+ * @version 2025/04/26 21:00
  */
 public class Run {
     public static void main(String[] args) {
